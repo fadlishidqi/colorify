@@ -11,56 +11,104 @@
 
     <div class="p-4">
         <!-- Navigation Menu -->
-        <nav class="space-y-1">
+        <nav class="flex flex-col space-y-3">
             <!-- Create Section -->
-            <div class="mb-6">
-                <a href="#" class="flex items-center px-3 py-2 text-gray-900 rounded-lg hover:bg-gray-50">
-                    <img src="{{ asset('images/create.png') }}" alt="Create" class="w-5 h-5 mr-3">
-                    <span class="text-pink-500 font-medium">Create</span>
-                </a>
-            </div>
-
-            <!-- Collection Section -->
-            <div class="mb-6">
-                <a href="#" class="flex items-center px-3 py-2 text-gray-900 hover:bg-gray-50 rounded-lg">
-                    <img src="{{ asset('assets/collection-icon.svg') }}" alt="Collection" class="w-5 h-5 mr-3">
-                    <span>Collection</span>
-                </a>
-
-                <!-- Collection Subitems -->
-                <div class="ml-11 mt-2 space-y-2">
-                    <div class="text-gray-600 py-1">Calm Colour</div>
-                    <div class="text-gray-600 py-1">For Project one</div>
-                    <div class="text-pink-500 py-1 cursor-pointer">+ Add more</div>
+            <div>
+                <div class="menu-item flex items-center space-x-3 p-2.5 rounded-lg hover:bg-gray-100 cursor-pointer" data-menu="create">
+                    <img src="../images/create.png" class="w-8 h-8" alt="Create icon" />
+                    <span class="text-lg text-gray-600 pl-1">Create</span>
                 </div>
             </div>
 
+            <!-- Collection Section -->
+            <div>
+                <div class="menu-item flex items-center space-x-3 p-2.5 rounded-lg hover:bg-gray-100 cursor-pointer" data-menu="collection" onclick="toggleCollection()">
+                    <img src="../images/collection.png" class="w-8 h-8" alt="Collection icon" />
+                    <span class="text-lg text-gray-600 pl-1">Collection</span>
+                </div>
+                
+                <div id="collectionDropdown" class="ml-14 mt-0 space-y-4 transition-all duration-300 ease-in-out" style="max-height: 0; overflow: hidden;">
+                    <div class="text-gray-500 hover:text-gray-700 cursor-pointer text-lg">Calm Colour</div>
+                    <div class="text-gray-500 hover:text-gray-700 cursor-pointer text-lg">For Project one</div>
+                    <div class="text-gray-500 hover:text-gray-700 cursor-pointer text-lg">+ Add more</div>
+                </div>
+            </div>
+
+            <script>
+            function toggleCollection() {
+                const dropdown = document.getElementById('collectionDropdown');
+                if (dropdown.style.maxHeight === '0px' || dropdown.style.maxHeight === '') {
+                    dropdown.style.maxHeight = dropdown.scrollHeight + 'px';
+                } else {
+                    dropdown.style.maxHeight = '0px';
+                }
+            }
+            </script>
+
             <!-- Presets Section -->
-            <div class="mb-4">
-                <a href="#" class="flex items-center px-3 py-2 text-gray-900 hover:bg-gray-50 rounded-lg">
-                    <img src="{{ asset('assets/presets-icon.svg') }}" alt="Presets" class="w-5 h-5 mr-3">
-                    <span>Presets</span>
-                </a>
+            <div>
+                <div class="menu-item flex items-center space-x-3 p-2.5 rounded-lg hover:bg-gray-100 cursor-pointer" data-menu="presets">
+                    <img src="../images/preset.png" class="w-6 h-6 ml-1" alt="Presets icon" />
+                    <span class="text-lg text-gray-600 pl-2">Presets</span>
+                </div>
             </div>
 
             <!-- Templates Section -->
-            <div class="mb-4">
-                <a href="#" class="flex items-center px-3 py-2 text-gray-900 hover:bg-gray-50 rounded-lg">
-                    <img src="{{ asset('assets/templates-icon.svg') }}" alt="Templates" class="w-5 h-5 mr-3">
-                    <span>Templates</span>
-                </a>
+            <div>
+                <div class="menu-item flex items-center space-x-3 p-2.5 rounded-lg hover:bg-gray-100 cursor-pointer" data-menu="templates">
+                    <img src="../images/Files.png" class="w-6 h-6 ml-1" alt="Templates icon" />
+                    <span class="text-lg text-gray-600 pl-2">Templates</span>
+                </div>
+            </div>
+
+            {{-- Section Content --}}
+            <div class="flex flex-col h-full">
+                <div class="border-t border-gray-200 mt-auto"></div>
+                
+                {{-- Search Bar --}}
+                <div class="mt-auto pt-6 border-t border-gray-200">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-3 flex items-center">
+                            <svg class="w-5 h-5 text-gray-500" viewBox="0 0 24 24" fill="none">
+                                <path d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Search for"
+                            class="w-full py-2.5 pl-10 pr-4 bg-gray-100 rounded-lg focus:outline-none text-gray-600 placeholder-gray-500"
+                        />
+                    </div>
+                </div>
             </div>
         </nav>
     </div>
-
-    <!-- Search Bar -->
-    <div class="absolute bottom-4 left-0 right-0 px-4">
-        <div class="relative">
-            <img src="{{ asset('assets/search-icon.svg') }}" alt="Search" class="absolute left-3 top-2.5 w-4 h-4 text-gray-400">
-            <input type="text" 
-                placeholder="Search for" 
-                class="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-gray-300 bg-gray-50"
-            >
-        </div>
-    </div>
 </div>
+
+<script>
+    function toggleCollection() {
+        const dropdown = document.getElementById('collectionDropdown');
+        if (dropdown.style.maxHeight === '0px' || dropdown.style.maxHeight === '') {
+            dropdown.style.maxHeight = dropdown.scrollHeight + 'px';
+        } else {
+            dropdown.style.maxHeight = '0px';
+        }
+    }
+    
+    // Menambahkan event listener untuk menu items
+    document.querySelectorAll('.menu-item').forEach(item => {
+        item.addEventListener('click', function() {
+            // Hapus active state dari semua menu items
+            document.querySelectorAll('.menu-item').forEach(menuItem => {
+                menuItem.classList.remove('bg-blue-50');
+                menuItem.querySelector('span').classList.remove('text-[#1a1a1a]', 'font-medium');
+                menuItem.querySelector('span').classList.add('text-gray-600');
+            });
+            
+            // Tambahkan active state ke menu item yang diklik
+            this.classList.add('bg-blue-50');
+            this.querySelector('span').classList.remove('text-gray-600');
+            this.querySelector('span').classList.add('text-[#1a1a1a]', 'font-medium');
+        });
+    });
+    </script>

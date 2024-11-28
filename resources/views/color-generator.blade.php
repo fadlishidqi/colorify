@@ -3,7 +3,7 @@
 @section('content')
 <div class="min-h-screen bg-gray-50 p-8">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-5xl mx-auto">
         <!-- Header -->
         <div class="text-center mb-8">
             <h1 class="text-6xl font-bold text-gray-900 mb-1 font-poppins">Colorify Color</h1>
