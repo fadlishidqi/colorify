@@ -122,20 +122,23 @@ document.addEventListener('DOMContentLoaded', function() {
 function setActiveMenuItem() {
     const currentPath = window.location.pathname;
     document.querySelectorAll('.menu-item').forEach(item => {
-        const menu = item.dataset.menu;
-        if (
-            (menu === 'create' && currentPath === '/') ||
-            (menu === 'collection' && currentPath.includes('collection')) ||
-            (menu === 'presets' && currentPath.includes('preset')) ||
-            (menu === 'templates' && currentPath.includes('template'))
-        ) {
-            item.classList.add('bg-blue-50');
-            const span = item.querySelector('span');
-            if (span) {
-                span.classList.remove('text-gray-600');
-                span.classList.add('text-[#1a1a1a]', 'font-medium');
+        if (item.dataset.menu !== 'collection') {  // Skip collection karena sudah ada handler sendiri
+        item.addEventListener('click', function(e) {
+            const menu = this.dataset.menu;
+            
+            switch(menu) {
+                case 'create':
+                    window.location.href = '/';
+                    break;
+                case 'presets':
+                    window.location.href = '/presets';
+                    break;
+                case 'templates':
+                    window.location.href = '/templates';
+                    break;
             }
-        }
+        });
+    }
     });
 }
 
