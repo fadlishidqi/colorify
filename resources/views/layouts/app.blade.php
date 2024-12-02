@@ -8,6 +8,7 @@
     @vite('resources/css/app.css')
 </head>
 <body class="bg-gray-50">
+    @if(!Route::is('login') && !Route::is('register'))
     <div class="flex">
         <!-- Sidebar -->
         @include('layouts.sidebar')
@@ -22,6 +23,9 @@
             </main>
         </div>
     </div>
+    @else
+        @yield('content')
+    @endif
     @stack('scripts')
 </body>
 </html>
