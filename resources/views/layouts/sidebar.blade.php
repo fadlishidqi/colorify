@@ -1,4 +1,3 @@
-<!-- resources/views/layouts/sidebar.blade.php -->
 <div class="sidebar fixed h-screen w-64 bg-white border-r border-gray-200">
     <!-- Header/Logo Section -->
     <div class="h-16 px-4 flex items-center border-b border-gray-200">
@@ -23,17 +22,24 @@
 
             <!-- Collection Section -->
             <div>
-                <div class="menu-item flex items-center space-x-3 p-2.5 rounded-lg hover:bg-gray-100 cursor-pointer" data-menu="collection" onclick="toggleCollection()">
-                    <img src="{{ asset('images/collection.png') }}" class="w-8 h-8" alt="Collection icon" />
-                    <span class="text-lg text-gray-600 pl-1">Collection</span>
-                </div>
-                
-                <div id="collectionDropdown" class="ml-14 transition-all duration-300 ease-in-out" style="max-height: 0; overflow: hidden;">
-                    <div id="collectionList" class="space-y-2">
-                        <!-- Collections will be loaded here dynamically -->
+                @auth
+                    <div class="menu-item flex items-center space-x-3 p-2.5 rounded-lg hover:bg-gray-100 cursor-pointer" data-menu="collection" onclick="toggleCollection()">
+                        <img src="{{ asset('images/collection.png') }}" class="w-8 h-8" alt="Collection icon" />
+                        <span class="text-lg text-gray-600 pl-1">Collection</span>
                     </div>
-                    <div onclick="showAddCollectionModal()" class="collection-add text-gray-500 hover:text-gray-700 cursor-pointer text-lg mt-2">+ Add more</div>
-                </div>
+                    
+                    <div id="collectionDropdown" class="ml-14 transition-all duration-300 ease-in-out" style="max-height: 0; overflow: hidden;">
+                        <div id="collectionList" class="space-y-2">
+                            <!-- Collections will be loaded here dynamically -->
+                        </div>
+                        <div onclick="showAddCollectionModal()" class="collection-add text-gray-500 hover:text-gray-700 cursor-pointer text-lg mt-2">+ Add more</div>
+                    </div>
+                @else
+                    <div class="menu-item flex items-center space-x-3 p-2.5 rounded-lg hover:bg-gray-100 cursor-pointer" onclick="window.location.href='{{ route('login') }}'">
+                        <img src="{{ asset('images/collection.png') }}" class="w-8 h-8" alt="Collection icon" />
+                        <span class="text-lg text-gray-600 pl-1">Collection</span>
+                    </div>
+                @endauth
             </div>
 
             <!-- Presets Section -->
@@ -57,17 +63,19 @@
                 <div class="border-t border-gray-200 mt-auto"></div>
                 <div class="mt-auto pt-6">
                     <div class="relative">
-                        <div class="absolute inset-y-0 left-3 flex items-center">
-                            <svg class="w-5 h-5 text-gray-500" viewBox="0 0 24 24" fill="none">
-                                <path d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </div>
-                        <input
-                            type="text"
-                            id="searchInput"
-                            placeholder="Search for"
-                            class="w-full py-2.5 pl-10 pr-4 bg-gray-100 rounded-lg focus:outline-none text-gray-600 placeholder-gray-500"
-                        />
+                        @auth
+                            <div class="absolute inset-y-0 left-3 flex items-center">
+                                <svg class="w-5 h-5 text-gray-500" viewBox="0 0 24 24" fill="none">
+                                    <path d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <input
+                                type="text"
+                                id="searchInput"
+                                placeholder="Search for"
+                                class="w-full py-2.5 pl-10 pr-4 bg-gray-100 rounded-lg focus:outline-none text-gray-600 placeholder-gray-500"
+                            />
+                        @endauth
                     </div>
                 </div>
             </div>
@@ -109,36 +117,40 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    loadCollections();
+    @auth
+        loadCollections();
+    @endauth
     setActiveMenuItem();
     
     // Event listener for search input
-    document.getElementById('searchInput').addEventListener('input', debounce(function(e) {
-        const searchTerm = e.target.value.toLowerCase();
-        filterCollections(searchTerm);
-    }, 300));
+    @auth
+        document.getElementById('searchInput').addEventListener('input', debounce(function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            filterCollections(searchTerm);
+        }, 300));
+    @endauth
 });
 
 function setActiveMenuItem() {
     const currentPath = window.location.pathname;
     document.querySelectorAll('.menu-item').forEach(item => {
-        if (item.dataset.menu !== 'collection') {  // Skip collection karena sudah ada handler sendiri
-        item.addEventListener('click', function(e) {
-            const menu = this.dataset.menu;
-            
-            switch(menu) {
-                case 'create':
-                    window.location.href = '/';
-                    break;
-                case 'presets':
-                    window.location.href = '/presets';
-                    break;
-                case 'templates':
-                    window.location.href = '/templates';
-                    break;
-            }
-        });
-    }
+        if (item.dataset.menu !== 'collection') {  
+            item.addEventListener('click', function(e) {
+                const menu = this.dataset.menu;
+                
+                switch(menu) {
+                    case 'create':
+                        window.location.href = '/';
+                        break;
+                    case 'presets':
+                        window.location.href = '/presets';
+                        break;
+                    case 'templates':
+                        window.location.href = '/templates';
+                        break;
+                }
+            });
+        }
     });
 }
 
@@ -156,8 +168,6 @@ function debounce(func, wait) {
 
 async function loadCollections() {
     try {
-        console.log('Loading collections...');
-        
         const response = await fetch('/collections', {
             method: 'GET',
             headers: {
@@ -167,15 +177,13 @@ async function loadCollections() {
         });
         
         if (!response.ok) {
-            throw new Error('Failed to load collections');
+            return;
         }
         
         const collections = await response.json();
-        console.log('Collections loaded:', collections); 
         
         const collectionList = document.getElementById('collectionList');
         if (!collectionList) {
-            console.error('Collection list element not found');
             return;
         }
         
@@ -195,8 +203,7 @@ async function loadCollections() {
         }
         
     } catch (error) {
-        console.error('Error loading collections:', error);
-        showNotification('Failed to load collections', 'error');
+        return;
     }
 }
 
@@ -267,7 +274,6 @@ async function handleCollectionSubmit(event) {
         await loadCollections();
         showNotification('Collection created successfully');
         
-        // Open the collections dropdown if it's closed
         const dropdown = document.getElementById('collectionDropdown');
         if (dropdown.style.maxHeight === '0px' || dropdown.style.maxHeight === '') {
             toggleCollection();
@@ -280,7 +286,6 @@ async function handleCollectionSubmit(event) {
 }
 
 function showNotification(message, type = 'success') {
-    // Remove any existing notifications
     const existingNotification = document.querySelector('.notification-toast');
     if (existingNotification) {
         existingNotification.remove();

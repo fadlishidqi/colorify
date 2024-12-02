@@ -15,10 +15,55 @@
             </svg>
         </button>
 
-        <!-- Login Button -->
-        <a href="/login" class="px-4 py-2 bg-[#FDEBB6] text-gray-700 font-bold rounded-lg hover:bg-[#f8e0a0] transition-colors">
-            Log in
-        </a>
+        <!-- Auth Buttons -->
+        @auth
+            <!-- User Menu -->
+            <div class="relative" x-data="{ open: false }">
+                <button @click="open = !open" @click.away="open = false" 
+                        class="px-4 py-2 bg-[#FDEBB6] text-gray-700 font-bold rounded-lg hover:bg-[#f8e0a0] transition-colors flex items-center space-x-2">
+                    <span>{{ Auth::user()->name }}</span>
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+                
+                <!-- Dropdown Menu -->
+                <div x-show="open"
+                     x-transition:enter="transition ease-out duration-100"
+                     x-transition:enter-start="transform opacity-0 scale-95"
+                     x-transition:enter-end="transform opacity-100 scale-100"
+                     x-transition:leave="transition ease-in duration-75"
+                     x-transition:leave-start="transform opacity-100 scale-100"
+                     x-transition:leave-end="transform opacity-0 scale-95"
+                     class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50">
+                    <div class="py-1">
+                        <div class="px-4 py-2 text-sm text-gray-500">
+                            Signed in as <span class="font-medium text-gray-900">{{ Auth::user()->email }}</span>
+                        </div>
+                        <div class="border-t border-gray-100"></div>
+                        <form method="POST" action="{{ route('logout') }}" class="block w-full text-left">
+                            @csrf
+                            <button type="submit" 
+                                    class="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                Sign out
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @else
+            <!-- Login/Register Links -->
+            <div class="flex items-center space-x-4">
+                <a href="{{ route('login') }}" 
+                   class="px-4 py-2 bg-[#FDEBB6] text-gray-700 font-bold rounded-lg hover:bg-[#f8e0a0] transition-colors">
+                    Sign in
+                </a>
+                <a href="{{ route('register') }}" 
+                   class="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium">
+                    Register
+                </a>
+            </div>
+        @endauth
 
         <!-- Export Button -->
         <button class="p-2 text-gray-500 hover:text-gray-700">
@@ -26,3 +71,62 @@
         </button>
     </div>
 </nav>
+
+<!-- AlpineJS - Add this before closing body tag or in your app layout -->
+<script src="//unpkg.com/alpinejs" defer></script>
+
+<style>
+/* Dropdown menu animations */
+.dropdown-enter-active,
+.dropdown-leave-active {
+    transition: all 0.15s ease-out;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+    opacity: 0;
+    transform: scale(0.95);
+}
+
+/* Hover effects */
+.hover\:bg-gray-100:hover {
+    background-color: rgba(243, 244, 246, 1);
+}
+
+.hover\:text-gray-900:hover {
+    color: rgba(17, 24, 39, 1);
+}
+
+/* User menu button hover */
+.hover\:bg-\[\#f8e0a0\]:hover {
+    background-color: #f8e0a0;
+}
+
+/* Transitions */
+.transition-colors {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+/* Focus styles */
+.focus\:outline-none:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+}
+
+.focus\:ring-2:focus {
+    --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+    --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+    box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+}
+
+/* Z-index utilities */
+.z-10 {
+    z-index: 10;
+}
+
+.z-50 {
+    z-index: 50;
+}
+</style>
