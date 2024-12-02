@@ -36,7 +36,7 @@
                             <p class="text-sm text-gray-500">Saved on {{ $palette->saved_on->format('M d, Y') }}</p>
                         </div>
                         <div class="relative">
-                            <button onclick="togglePaletteMenu({{ $palette->id }})" 
+                            <button onclick="event.stopPropagation(); togglePaletteMenu({{ $palette->id }})" 
                                     class="p-1.5 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100">
                                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -194,15 +194,18 @@ let activeMenu = null;
 
 function togglePaletteMenu(paletteId) {
     const menu = document.getElementById(`paletteMenu_${paletteId}`);
+    if (!menu) return;
     
-    // Close active menu if different
-    if (activeMenu && activeMenu !== menu) {
-        activeMenu.classList.add('hidden');
-    }
+    // Tutup menu yang sedang terbuka
+    const openMenus = document.querySelectorAll('[id^="paletteMenu_"]');
+    openMenus.forEach(openMenu => {
+        if (openMenu !== menu && !openMenu.classList.contains('hidden')) {
+            openMenu.classList.add('hidden');
+        }
+    });
     
-    // Toggle clicked menu
+    // Toggle menu yang diklik
     menu.classList.toggle('hidden');
-    activeMenu = menu.classList.contains('hidden') ? null : menu;
 }
 
 // Close menu when clicking outside
@@ -210,6 +213,13 @@ document.addEventListener('click', function(event) {
     if (activeMenu && !event.target.closest('.relative')) {
         activeMenu.classList.add('hidden');
         activeMenu = null;
+    }
+});
+
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.relative')) {
+        const openMenus = document.querySelectorAll('[id^="paletteMenu_"]');
+        openMenus.forEach(menu => menu.classList.add('hidden'));
     }
 });
 
@@ -257,20 +267,52 @@ function addColorInput() {
 // Edit Palette Functions
 function showEditPaletteModal(paletteId) {
     const modal = document.getElementById('editPaletteModal');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-
     const palette = document.getElementById(`palette_${paletteId}`);
-    const paletteName = palette.querySelector('h3').textContent;
+    
+    if (!palette) return;
+    
+    const name = palette.querySelector('h3').textContent;
     const colors = Array.from(palette.querySelector('.h-48').children)
         .map(div => rgbToHex(div.style.backgroundColor));
-
-    document.getElementById('editPaletteId').value = paletteId;
-    document.getElementById('editPaletteName').value = paletteName;
     
-    const editColorInputs = document.getElementById('editColorInputs');
-    editColorInputs.innerHTML = '';
+    document.getElementById('editPaletteId').value = paletteId;
+    document.getElementById('editPaletteName').value = name;
+    
+    // Clear existing color inputs
+    document.getElementById('editColorInputs').innerHTML = '';
+    
+    // Add color inputs for each color
     colors.forEach(color => addEditColorInput(color));
+    
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function addEditColorInput(color = '#000000') {
+    const editColorInputs = document.getElementById('editColorInputs');
+    const div = document.createElement('div');
+    div.className = 'flex items-center space-x-2 mb-2';
+    
+    const hexColor = rgbToHex(color);
+    div.innerHTML = `
+        <input type="color" class="color-input h-10 w-14" value="${hexColor}">
+        <input type="text" class="color-hex flex-1 px-3 py-2 border rounded-lg" 
+               value="${hexColor}" placeholder="#000000" onchange="updateColorPicker(this)">
+        <button type="button" onclick="removeColor(this)" class="text-red-500 hover:text-red-700">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+    `;
+    
+    const colorInput = div.querySelector('input[type="color"]');
+    const hexInput = div.querySelector('.color-hex');
+    
+    colorInput.addEventListener('input', function() {
+        hexInput.value = this.value.toUpperCase();
+    });
+    
+    editColorInputs.appendChild(div);
 }
 
 function closeEditPaletteModal() {
@@ -356,12 +398,13 @@ async function handleEditPalette(event) {
     event.preventDefault();
     
     const paletteId = document.getElementById('editPaletteId').value;
+    const collectionId = {{ $collection->id }}; // Get the collection ID
     const name = document.getElementById('editPaletteName').value;
     const colors = Array.from(document.querySelectorAll('#editColorInputs .color-input'))
         .map(input => input.value.toUpperCase());
-    
+
     try {
-        const response = await fetch(`/collections/palettes/${paletteId}`, {
+        const response = await fetch(`/collections/${collectionId}/palettes/${paletteId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -371,42 +414,61 @@ async function handleEditPalette(event) {
             body: JSON.stringify({ name, colors })
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-            const data = await response.json();
-            throw new Error(data.message || 'Failed to update palette');
+            throw new Error(data.error || 'Gagal mengupdate palette');
+        }
+
+        // Update UI
+        const palette = document.getElementById(`palette_${paletteId}`);
+        if (palette) {
+            palette.querySelector('h3').textContent = name;
+            const colorContainer = palette.querySelector('.h-48');
+            colorContainer.innerHTML = colors.map(color => 
+                `<div class="flex-1" style="background-color: ${color}"></div>`
+            ).join('');
         }
 
         closeEditPaletteModal();
-        showNotification('Palette updated successfully');
-        window.location.reload();
+        showNotification('Palette berhasil diupdate');
+
     } catch (error) {
-        console.error('Error:', error);
-        showNotification(error.message, 'error');
+        console.error('Update error:', error);
+        showNotification(error.message || 'Gagal mengupdate palette', 'error');
     }
 }
-
 async function deletePalette(paletteId) {
-    if (!confirm('Are you sure you want to delete this palette?')) {
+    if (!confirm('Apakah anda yakin ingin menghapus palette ini?')) {
         return;
     }
 
     try {
-        const response = await fetch(`/collections/palettes/${paletteId}`, {
+        const collectionId = {{ $collection->id }};
+        const response = await fetch(`/collections/${collectionId}/palettes/${paletteId}`, {
             method: 'DELETE',
             headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 'Accept': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                'Content-Type': 'application/json'
             }
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-            throw new Error('Failed to delete palette');
+            throw new Error(data.error || 'Failed to delete palette');
         }
 
-        showNotification('Palette deleted successfully');
-        window.location.reload();
+        // Remove element from DOM
+        const paletteElement = document.getElementById(`palette_${paletteId}`);
+        if (paletteElement) {
+            paletteElement.remove();
+            showNotification('Palette berhasil dihapus');
+        }
+
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Delete error:', error);
         showNotification(error.message, 'error');
     }
 }
@@ -444,6 +506,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (event.target === editModal) {
             closeEditPaletteModal();
         }
+    });
+
+    // Event listener untuk menu toggle
+    document.querySelectorAll('[onclick^="togglePaletteMenu"]').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const paletteId = this.getAttribute('onclick').match(/\d+/)[0];
+            togglePaletteMenu(paletteId);
+        });
     });
 });
 </script>

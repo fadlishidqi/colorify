@@ -18,6 +18,6 @@ Route::get('/collections', [CollectionController::class, 'index'])->name('collec
 Route::get('/collection/{slug}', [CollectionController::class, 'show'])->name('collections.show');
 
 Route::post('/collections/{collection}/palettes', [ColorPaletteController::class, 'store'])->name('collections.palettes.store');
-Route::put('/collections/palettes/{palette}', [ColorPaletteController::class, 'update'])->name('collections.palettes.update');
-Route::delete('/collections/palettes/{palette}', [ColorPaletteController::class, 'destroy'])->name('collections.palettes.destroy');
+Route::put('/collections/{collection}/palettes/{palette}', [ColorPaletteController::class, 'update'])->name('collections.palettes.update');
+Route::delete('/collections/{collection}/palettes/{palette}', [ColorPaletteController::class, 'destroy'])->name('collections.palettes.destroy');
 Route::get('/collections/palettes/{palette}', [ColorPaletteController::class, 'show'])->name('collections.palettes.show');

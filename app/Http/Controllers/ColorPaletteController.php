@@ -35,37 +35,53 @@ class ColorPaletteController extends Controller
 
     // Update an existing color palette
     public function update(Request $request, Collection $collection, ColorPalette $palette)
-{
-    // Check if the palette belongs to the given collection
-    if ($palette->collection_id !== $collection->id || auth()->user()->id !== $collection->user_id) {
-        return response()->json(['error' => 'Unauthorized'], 403);
+    {
+        try {
+            // Check if the palette belongs to the given collection
+            if ($palette->collection_id !== $collection->id) {
+                return response()->json(['error' => 'Palette tidak ditemukan'], 404);
+            }
+    
+            // Validate request
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'colors' => 'required|array|min:1'
+            ]);
+    
+            // Update palette
+            $palette->update([
+                'name' => $validated['name'],
+                'colors' => $validated['colors'],
+            ]);
+    
+            return response()->json([
+                'message' => 'Palette updated successfully',
+                'palette' => $palette
+            ], 200);
+    
+        } catch (\Exception $e) {
+            \Log::error('Failed to update palette: ' . $e->getMessage());
+            return response()->json(['error' => 'Gagal mengupdate palette'], 500);
+        }
     }
-
-    // Continue with the update logic
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'colors' => 'required|array|min:1'
-    ]);
-
-    $palette->update([
-        'name' => $validated['name'],
-        'colors' => $validated['colors'],
-    ]);
-
-    return response()->json($palette, 200);
-}
 
 public function destroy(Collection $collection, ColorPalette $palette)
 {
-    // Check if the palette belongs to the given collection
-    if ($palette->collection_id !== $collection->id || auth()->user()->id !== $collection->user_id) {
-        return response()->json(['error' => 'Unauthorized'], 403);
+    try {
+        // Verify the palette belongs to the collection
+        if ($palette->collection_id !== $collection->id) {
+            return response()->json(['error' => 'Palette tidak ditemukan'], 404);
+        }
+
+        // Delete the palette
+        $palette->delete();
+
+        return response()->json(['message' => 'Palette deleted successfully']);
+
+    } catch (\Exception $e) {
+        \Log::error('Failed to delete palette: ' . $e->getMessage());
+        return response()->json(['error' => 'Gagal menghapus palette'], 500);
     }
-
-    // Delete the palette
-    $palette->delete();
-
-    return response()->json(['message' => 'Palette deleted successfully'], 200);
 }
 
 }
